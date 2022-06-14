@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+import sys, decimal
+
+class fdf:
+    A0 = 0
+    A1 = 0
+    A2 = 0
+    A3 = 0
+    A4 = 0
+    
+    def __init__(self, A0, A1, A2, A3, A4):
+        self.A0 = A0
+        self.A1 = A1
+        self.A2 = A2
+        self.A3 = A3
+        self.A4 = A4
+
+    def compute(self, x):
+        return (self.A4 * x ** 4) + (self.A3 * x ** 3) + (self.A2 * x ** 2) + (self.A1 * x) + self.A0
+
+    def derive(self, x):
+        return (4 * (self.A4 * x ** 3)) + (3 * (self.A3 * x ** 2)) + (2 * (self.A2 * x)) + self.A1
+    
+def message():
+    if len(sys.argv) == 2:
+        if sys.argv[1] == '-h':
+            print("USAGE")
+            print("    ./105torus opt a0 a1 a2 a3 a4 n\n")
+            print("DESCRIPTION")
+            print("    opt\t      method option:")
+            print("\t\t  1 for the bisection method")
+            print("\t\t  2 for Newton's method")
+            print("\t\t  3 for the secant method")
+            print("    a[0-4]    coefficients of the equation")
+            print("    n\t      precision (the application of the polynomial to the solution should")
+            print("     \t      be smaller than 10^-n)")
+            sys.exit(0)
+
+def error_handler():
+    if len(sys.argv) < 8:
+        sys.exit(84)
+    if len(sys.argv) > 8:
+        sys.exit(84)
+    if int(sys.argv[1]) < 1:
+        sys.exit(84)
+    if int(sys.argv[1]) > 3:
+        sys.exit(84)
+
+def bisection_method(f, n):
+    a = 0
+    b = 1
+    C = (a + b) / 2
+
+    while abs(f.compute(C)) > (10 ** -n):
+        print("x = {0:.{1}f}".format(C, abs((decimal.Decimal(C)).as_tuple().exponent) if abs(
+            (decimal.Decimal(C)).as_tuple().exponent) < n else n))
+        if f.compute(C) * f.compute(a) < 0:
+            b = C
+        else:
+            a = C
+        C = (a + b) / 2
+    return C
+
+def newtons_method(f, n):
+    x = 0.5
+
+    print("x = {0:.{1}f}".format(x, abs((decimal.Decimal(x)).as_tuple().exponent) if abs(
+        (decimal.Decimal(x)).as_tuple().exponent) < n else n))
+    while abs(f.compute(x - (f.compute(x)) / (f.derive(x)))) > (10 ** -n):
+        x = x - (f.compute(x)) / (f.derive(x))
+        print("x = {0:.{1}f}".format(x, abs((decimal.Decimal(x)).as_tuple().exponent) if abs(
+            (decimal.Decimal(x)).as_tuple().exponent) < n else n))
+    return x - (f.compute(x)) / (f.derive(x))
+
+def secant_method(f, n):
+    xp = 0
+    xa = 1
+    xn = xa - ((f.compute(xa) * (xa - xp)) / (f.compute(xa) - f.compute(xp)))
+    xp = xa
+    xa = xn
+
+    while abs(f.compute(xn)) > (10 ** -n):
+        print("x = {0:.{1}f}".format(xn, abs((decimal.Decimal(xn)).as_tuple().exponent) if abs(
+            (decimal.Decimal(xn)).as_tuple().exponent) < n else n))
+        xn = xa - ((f.compute(xa) * (xa - xp)) / (f.compute(xa) - f.compute(xp)))
+        xp = xa
+        xa = xn
+    return xn
+
+
+def main():
+    message()
+    error_handler()
+    opt = int(sys.argv[1])
+    f = fdf(int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), int(sys.argv[6]))
+    n = int(sys.argv[7])
+    
+    if opt == 1:
+        x = bisection_method(f, n)
+    elif opt == 2:
+        x = newtons_method(f, n)
+    elif opt == 3:
+        x = secant_method(f, n)
+    print("x = {0:.{1}f}".format(x, abs((decimal.Decimal(x)).as_tuple().exponent) if abs(
+        (decimal.Decimal(x)).as_tuple().exponent) < n else n))
+
+if __name__ == "__main__":
+    main()
